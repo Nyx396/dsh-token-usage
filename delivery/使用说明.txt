@@ -1,0 +1,109 @@
+DSH Token 用量统计
+插件名称：dsh-token-usage
+版本：1.0.0-local.1
+包类型：Windows x64 便携安装包（解压后双击安装，可直接装到别的机器）
+
+一、它提供什么
+1. 在 DSH 设置侧栏新增“Token 用量”页面，展示本机保存的历史用量。
+2. 页面内容：
+   - 总用量、日峰值用量、最常用的模型三张概览卡片，可展开明细；
+   - 最近一年的 Token 活动热力图（每天 / 每周 / 累计总量三种视图）；
+   - 近 7 天或近 30 天的模型用量趋势折线图；
+   - 近 7 天或近 30 天的模型用量占比饼图与表格；
+   - 顶部“刷新”按钮，页面可见时每 15 秒自动刷新。
+3. 统计只使用服务商返回的用量字段（输入 + 输出 + 缓存命中/写入 + 推理，不重复计算），
+   不按字符数估算；未返回用量的调用只计数为“未计入”，不估算、不补数。
+4. 只保存“模型 / 日期 / Token 总数”，不保存任何消息正文或提示词。
+5. 历史用量持久化在 <DSH_HOME>\token-usage\ledger-v1.json，重启 DSH 不丢失；
+   同一份数据不会因为反复刷新而重复累加。
+6. 统计接口需通过 DSH 自身的连接鉴权，未认证请求读不到用量；接口只读，拒绝其他方法。
+
+二、适用范围
+1. Windows 64 位的 DeepSeek Harness Desktop。
+2. 已在 DeepSeek Harness Desktop 0.2.1-rc.2 上验证；其他版本可能因插件接口变化失效，
+   请先在一个不重要的环境里试装，或用“检查环境.cmd”确认。
+3. 插件已预构建，目标机器不需要另外安装 Node、Python 或 npm 依赖；
+   安装使用目标机器上 DSH 自带的命令行和运行时，全程离线。
+4. 安装器会自动定位本机的 DSH 与 DSH_HOME，不依赖打包机器的盘符，
+   所以压缩包可以直接拿到别的机器上安装。
+
+三、安装
+1. 把整个 ZIP 解压到任意普通目录（例如桌面新建文件夹），
+   不要在压缩包预览窗口里直接运行脚本。
+2. 完全退出 DSH，包括托盘图标；安装器不会擅自结束进程。
+3. 可先双击“检查环境.cmd”：它只报告 DSH CLI 路径、DSH_HOME、profile、
+   插件目录、版本、当前是否已注册、DSH 进程数量，不修改任何文件或设置。
+4. 双击“安装.cmd”，等待窗口显示 Install complete 后按任意键关闭，再打开 DSH。
+5. 打开 DSH 设置（侧栏设置）确认出现“Token 用量”一项。
+
+安装器把插件复制到：
+  <DSH_HOME>\custom-plugins\dsh-token-usage\<profile>
+并在该 profile 的 package.json 中登记依赖 link: 和 bundle。
+默认 DSH_HOME 是当前用户的 .dsh（例如 C:\Users\<用户名>\.dsh），默认 profile 是 desktop。
+安装完成后可以移动或删除解压目录；已安装的插件不依赖解压目录。
+包管理操作明确使用离线模式；离线条件不满足时会报告失败并回滚，不会静默改为联网下载。
+
+四、数据与隐私
+1. 用量账本：<DSH_HOME>\token-usage\ledger-v1.json（仅本机，不上传）。
+2. 只记录模型名、日期和 Token 数；不记录消息内容、附件或提示词。
+3. 卸载不会删除这个账本，重新安装后历史用量会继续展示；
+   如要彻底清除，手删除 <DSH_HOME>\token-usage 目录即可。
+4. 已删除的会话不会被重新统计；其此前已记录的用量仍保留。
+
+五、卸载
+1. 完全退出 DSH（含托盘图标）。
+2. 双击“卸载.cmd”。它只移除当前 profile 中的 dsh-token-usage 登记和插件目录，
+   保留其他插件、模型、会话设置，也保留用量账本。
+3. 卸载后设置里的“Token 用量”页面消失，DSH 其他功能不受影响。
+
+六、检查环境
+双击“检查环境.cmd”，或在本目录用 PowerShell 运行：
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\portable.ps1 -Mode Check
+它只显示：DSH CLI 路径、DSH_HOME、profile、稳定安装目录、插件版本、
+当前是否已注册、DSH 进程数量。不修改任何文件或设置。
+
+七、自定义 DSH 路径、DSH_HOME 或 profile
+如果自动识别失败，或想装到别的 profile，在 PowerShell 中进入解压目录执行
+（路径含中文或空格时保留双引号）：
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\portable.ps1 -Mode Check -DshPath "D:\Apps\DeepSeek Harness" -DshHome "D:\DSH Data" -Profile desktop
+确认路径正确后，把 Check 改成 Install；卸载用 -Mode Uninstall。
+参数说明：
+  -DshPath   DSH 安装目录，也可以直接指向 DSH 自带的 resources\runtime\cli\bin\dsh.cmd；
+  -DshHome   DSH 数据目录，默认 %USERPROFILE%\.dsh，也可用环境变量 DSH_HOME；
+  -Profile   profile 名称，默认 desktop。
+三个 CMD 也接受同样参数，例如：
+  安装.cmd -DshHome "D:\DSH Data" -Profile desktop
+已有 profile 必须先由 DSH 初始化；安装器不会创建或覆盖整套个人配置。
+
+八、备份与回滚
+1. 安装/卸载前会在 <DSH_HOME>\backups\dsh-token-usage\时间戳-编号 生成事务备份：
+   profile 的 package.json、pnpm-lock.yaml、pnpm-workspace.yaml、cordis.patch.yml 等元数据副本、
+   原插件目录或 node_modules 链接、transaction.json；成功时另写 result.txt。
+2. 操作失败会自动恢复本次事务（插件目录、链接与 profile 元数据），并报告备份路径；
+   不会联网兜底。
+3. 人工恢复时只恢复本插件相关项，不要把旧备份整套覆盖到后来已经改过的 profile，
+   否则可能覆盖之后添加的其他插件设置。
+4. 成功事务的备份会保留，可定期手工清理较早的时间戳目录。
+
+九、常见问题
+1. 提示 DSH 正在运行：完全退出 DSH（含托盘图标）后重试；脚本不会替你结束进程。
+2. 提示找不到 DSH：先启动一次 DSH Desktop；或用 -DshPath 指定安装目录 / dsh.cmd。
+3. 提示 profile 未初始化：先打开一次 DSH Desktop，让 profile 目录生成后再安装。
+4. 安装成功但设置里没有“Token 用量”：确认装的是你正在使用的 profile（默认 desktop），
+   完全退出并重新打开 DSH；刚安装时可能还没有历史数据，页面显示“正在整理历史用量…”属正常。
+5. 统计里出现“未计入”的调用：该次调用的服务商没有返回用量字段，插件不会估算。
+6. 提示路径是重解析点：安装器为避免操作链接指向的其他目录而停止，请选择普通目录。
+7. 卸载后仍想保留历史：账本在 <DSH_HOME>\token-usage，卸载不会动它。
+
+十、交付文件清单
+使用说明.txt、安装.cmd、卸载.cmd、检查环境.cmd、tools\portable.ps1、SHA256SUMS.txt，
+以及预构建插件 plugin\：
+  plugin\package.json、plugin\cordis.patch.yml、plugin\lib\index.js、
+  plugin\lib\core.js、plugin\lib\client.js。
+ZIP 旁的 .sha256.txt 是整个压缩包的 SHA-256 校验值；
+包内 SHA256SUMS.txt 用于逐个校验交付文件。
+
+十一、说明
+1. 本包只打包现有 dsh-token-usage 插件，插件代码与源机器上运行的版本一致，未做功能改动。
+2. 本包不修改 DSH 的 app.asar，不修改 DSH 程序文件，只新增插件目录和 profile 登记。
+3. 安装/卸载只改当前 profile 中与 dsh-token-usage 有关的登记项，其他插件不受影响。
