@@ -1,8 +1,4 @@
-# dsh-token-usage 便携发布工程
-
-把现有 `dsh-token-usage`（DSH 设置里的“Token 用量”页面）打包成可在任意 Windows x64 机器上
-离线植入 DeepSeek Harness Desktop 的发布 ZIP。安装/卸载/检查框架与同目录的
-`multi-workspace`、收纳口袋 `dsh-plugin-hub` 保持一致。
+# dsh-token-usage 
 
 ## 目录
 
