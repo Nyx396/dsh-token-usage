@@ -1,4 +1,0 @@
-- insert:
-    - id: token-usage
-      name: dsh-token-usage
-      inject: [webServer, connection, sessionPersistence]
